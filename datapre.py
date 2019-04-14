@@ -6,7 +6,7 @@ from sklearn import preprocessing
 # 训练数据
 d00 = np.array(pd.read_csv('./datasets/d00.csv', header=None))
 data_scalar = preprocessing.StandardScaler().fit(d00)
-d00 = data_scalar.transform(d00)#.astype(np.float32)
+d00 = data_scalar.transform(d00)
 
 # 测试数据
 test_data = np.zeros([21, 960, 52])
