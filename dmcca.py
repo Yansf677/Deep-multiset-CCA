@@ -1,81 +1,11 @@
 
 import numpy as np
 from keras.models import Model
-import keras.backend as K
 from keras.layers import Input, Dense, concatenate, normalization
-from keras.models import load_model
-from keras.callbacks import  EarlyStopping
 from mcca_layer import MCCA
-
-from sklearn import preprocessing
-import matplotlib.pyplot as plt
-from scipy import stats
-
 
 def constant_loss(y_true, y_pred):
     return y_pred
-
-def mean_pred(y_true, y_pred):
-    return K.mean(y_pred)
-
-def diag_power(x, alpha):
-    y = np.copy(x)
-    for i in range(len(x)):
-        y[i,i] = y[i,i] ** alpha
-    
-    return y
-
-def MyPCA(x, percent):
-
-    U, lamda, Ut = np.linalg.svd(np.dot(x.T, x) / (len(x)-1))
-
-    for i in range(len(x.T)):
-        if sum(lamda[0:(i+1)])/sum(lamda) >= percent:
-            lamda_pc = np.diag(lamda[0:(i+1)])
-            Px_pc = U[:, 0:(i+1)]
-            break
-
-    return lamda_pc, Px_pc
-
-def MyCCA(x, y):
-    
-    sigma_x = diag_power(np.eye(len(x.T)) * (np.dot(x.T, x) / (len(x) - 1)), -0.5)
-    sigma_y = diag_power(np.eye(len(y.T)) * (np.dot(y.T, y) / (len(x) - 1)), -0.5)
-    sigma_xy = (np.dot(x.T, y) / (len(x) - 1))
-    
-    K = np.dot(np.dot(sigma_x, sigma_xy), sigma_y)
-    
-    R, sigma, VT = np.linalg.svd(K)
-    
-    J = np.dot(sigma_x, R)
-    L = np.dot(sigma_y, VT.T)
-    sig = np.zeros([len(x.T), len(y.T)])
-    sig[0:(len(y.T)), :] = np.diag(sigma)
-    
-    return J, L, sig
-
-def cal_threshold(x, alpha):
-
-    kernel = stats.gaussian_kde(x)
-
-    step = np.linspace(0,100,10000)
-    pdf = kernel(step)
-    for i in range(len(step)):
-
-        if sum(pdf[0:(i+1)]) / sum(pdf) > alpha:
-            
-            break
-    return step[i+1]
-
-def calculateR(p, limit):
-    count1 = 0; count2 = 0
-    for i in range(960):
-        if p[i] > limit:
-            if i < 160:
-                count1 = count1 + 1
-            else:
-                count2 = count2 + 1
-    return count1 / 160, count2 / 800
 
 if __name__ == '__main__':
 
@@ -90,7 +20,7 @@ if __name__ == '__main__':
     
     # network settings
     epoch_num  = 500
-    batch_size = 50
+    batch_size = 200
 
     # load data
     train_x = np.load('train_data.npy')
@@ -120,16 +50,17 @@ if __name__ == '__main__':
     # feature layer
     shared_layer = concatenate([net1_out, net2_out, net3_out], name='shared_layer')
     
-    #bn = normalization.BatchNormalization()
+    BN = normalization.BatchNormalization()(shared_layer)
     
-    cca_layer = MCCA(1, name='cca_layer')(shared_layer)
+    mcca_layer = MCCA(1, 3, name='cca_layer')(BN)
 
-    model = Model(inputs=[input1, input2, input3], outputs=cca_layer)
-    #x = model.predict([train_x, train_x, train_x])
+    model = Model(inputs=[input1, input2, input3], outputs=mcca_layer)
     
     model.compile(optimizer='sgd', loss=constant_loss)
-    model.fit([train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True,
-              validation_split = 0.10, callbacks=[EarlyStopping(monitor='val_loss', patience = 100000)])
+    
+    model.fit([train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True)
+    
+    model.save('current_dcca.h5') # 保存模型
     
 
 
