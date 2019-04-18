@@ -17,7 +17,7 @@ if __name__ == '__main__':
     
     # network settings
     epoch_num  = 500
-    batch_size = 200
+    batch_size = 100
 
     # load data
     train_x = np.load('train_data.npy')
@@ -43,19 +43,26 @@ if __name__ == '__main__':
     net3_2 = Dense(hidden_shape, activation=activation1,  name='x3_2')(net3_1)
     net3_3 = Dense(hidden_shape, activation=activation1, name='x3_3')(net3_2)
     net3_out = Dense(feature_shape, activation='linear', name='x3_4')(net3_3)
+    
+    # net4
+    input4 = Input(shape=(input_shape, ), name='input4')
+    net4_1 = Dense(hidden_shape, activation=activation1,  name='x4_1')(input4)
+    net4_2 = Dense(hidden_shape, activation=activation1,  name='x4_2')(net4_1)
+    net4_3 = Dense(hidden_shape, activation=activation1, name='x4_3')(net4_2)
+    net4_out = Dense(feature_shape, activation='linear', name='x4_4')(net4_3)
 
     # feature layer
-    shared_layer = concatenate([net1_out, net2_out, net3_out], name='shared_layer')
+    shared_layer = concatenate([net1_out, net2_out, net3_out, net4_out], name='shared_layer')
     
     BN = normalization.BatchNormalization()(shared_layer)
     
-    mcca_layer = MCCA(1, feature_shape, 3, name='cca_layer')(BN)
+    mcca_layer = MCCA(1, feature_shape, 4, name='cca_layer')(BN)
 
-    model = Model(inputs=[input1, input2, input3], outputs=mcca_layer)
+    model = Model(inputs=[input1, input2, input3, input4], outputs=mcca_layer)
     
     model.compile(optimizer='sgd', loss=constant_loss)
     
-    model.fit([train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True)
+    model.fit([train_x, train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True)
     
     #model.save('current_dcca.h5') # 保存模型
     
