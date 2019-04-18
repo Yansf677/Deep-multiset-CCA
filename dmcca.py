@@ -10,13 +10,10 @@ def constant_loss(y_true, y_pred):
 if __name__ == '__main__':
 
     # size of the input for view 1 and view 2
-    input_shape1 = 52
-    input_shape2 = 52
-    input_shape3 = 52
-    
-    feature_shape1 = 10
-    feature_shape2 = 10
-    feature_shape3 = 10
+    input_shape = 52
+    hidden_shape = 20
+    feature_shape = 10
+    activation1 = 'tanh'
     
     # network settings
     epoch_num  = 500
@@ -27,32 +24,32 @@ if __name__ == '__main__':
 
     # 网络结构
     # net1
-    input1 = Input(shape=(input_shape1, ), name='input1')
-    net1_1 = Dense(10, activation='relu', name='x1_1')(input1)
-    net1_2 = Dense(10, activation='relu', name='x1_2')(net1_1)
-    net1_3 = Dense(10, activation='relu',  name='x1_3')(net1_2)
-    net1_out = Dense(feature_shape1, activation='linear', name='x1_4')(net1_3)
+    input1 = Input(shape=(input_shape, ), name='input1')
+    net1_1 = Dense(hidden_shape, activation=activation1, name='x1_1')(input1)
+    net1_2 = Dense(hidden_shape, activation=activation1, name='x1_2')(net1_1)
+    net1_3 = Dense(hidden_shape, activation=activation1,  name='x1_3')(net1_2)
+    net1_out = Dense(feature_shape, activation='linear', name='x1_4')(net1_3)
     
     # net2
-    input2 = Input(shape=(input_shape2, ), name='input2')
-    net2_1 = Dense(10, activation='relu',  name='x2_1')(input2)
-    net2_2 = Dense(10, activation='relu',  name='x2_2')(net2_1)
-    net2_3 = Dense(10, activation='relu', name='x2_3')(net2_2)
-    net2_out = Dense(feature_shape2, activation='linear', name='x2_4')(net2_3)
+    input2 = Input(shape=(input_shape, ), name='input2')
+    net2_1 = Dense(hidden_shape, activation=activation1,  name='x2_1')(input2)
+    net2_2 = Dense(hidden_shape, activation=activation1,  name='x2_2')(net2_1)
+    net2_3 = Dense(hidden_shape, activation=activation1, name='x2_3')(net2_2)
+    net2_out = Dense(feature_shape, activation='linear', name='x2_4')(net2_3)
     
     # net3
-    input3 = Input(shape=(input_shape3, ), name='input3')
-    net3_1 = Dense(10, activation='relu',  name='x3_1')(input3)
-    net3_2 = Dense(10, activation='relu',  name='x3_2')(net3_1)
-    net3_3 = Dense(10, activation='relu', name='x3_3')(net3_2)
-    net3_out = Dense(feature_shape3, activation='linear', name='x3_4')(net3_3)
+    input3 = Input(shape=(input_shape, ), name='input3')
+    net3_1 = Dense(hidden_shape, activation=activation1,  name='x3_1')(input3)
+    net3_2 = Dense(hidden_shape, activation=activation1,  name='x3_2')(net3_1)
+    net3_3 = Dense(hidden_shape, activation=activation1, name='x3_3')(net3_2)
+    net3_out = Dense(feature_shape, activation='linear', name='x3_4')(net3_3)
 
     # feature layer
     shared_layer = concatenate([net1_out, net2_out, net3_out], name='shared_layer')
     
     BN = normalization.BatchNormalization()(shared_layer)
     
-    mcca_layer = MCCA(1, 3, name='cca_layer')(BN)
+    mcca_layer = MCCA(1, feature_shape, 3, name='cca_layer')(BN)
 
     model = Model(inputs=[input1, input2, input3], outputs=mcca_layer)
     
@@ -60,7 +57,7 @@ if __name__ == '__main__':
     
     model.fit([train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True)
     
-    model.save('current_dcca.h5') # 保存模型
+    #model.save('current_dcca.h5') # 保存模型
     
 
 

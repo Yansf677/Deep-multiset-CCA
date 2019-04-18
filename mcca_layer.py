@@ -8,9 +8,10 @@ class MCCA(Layer):
     
     '''
 
-    def __init__(self, output_dim=1, num_sets = 3, **kwargs):
+    def __init__(self, output_dim=1, feature_shape = 10, num_sets = 3, **kwargs):
         
         self.output_dim = output_dim
+        self.f = feature_shape
         self.N = num_sets
         super(MCCA, self).__init__(**kwargs)
 
@@ -22,14 +23,19 @@ class MCCA(Layer):
 
         eps = tf.constant([1e-4])
         
+        # mean
         one = tf.constant([1.0])
-        samplenum = tf.shape(x)[0]
-        samplenum_float = tf.cast(samplenum, 'float')
+        sample = tf.shape(x)[0]
+        sample_float = tf.cast(sample, 'float')
         
-        partition = tf.divide(one, samplenum_float)
-        xbar = K.transpose(x) - partition * tf.matmul(K.transpose(x), tf.ones([samplenum, samplenum]))
-        sigma_xbar = tf.matmul(xbar, tf.transpose(xbar))
+        partition = tf.divide(one, sample_float)
+        xbar = K.transpose(x) - partition * tf.matmul(K.transpose(x), tf.ones([sample, sample]))
+        R = tf.matmul(xbar, tf.transpose(xbar))
+        S = tf.zeros_like(R)
         
+        for i in range(self.N):
+            S[i*self.f:(i+1)*self.f,i*self.f:(i+1)*self.f] = tf.assign_add(S[i*self.f:(i+1)*self.f,i*self.f:(i+1)*self.f], R[i*self.f:(i+1)*self.f,i*self.f:(i+1)*self.f])
+        '''
         f = tf.shape(x)[1] // self.N
         Rw = tf.zeros([f,f])
         RT = tf.zeros([f,f])
@@ -40,13 +46,13 @@ class MCCA(Layer):
         for ki in range(self.N):
             for kj in range(self.N):
                 RT = RT + sigma_xbar[ki*f:(ki+1)*f, kj*f:(kj+1)*f] / (self.N * (self.N - 1))
-        
-        T = tf.matmul(tf.linalg.inv(Rw + eps * tf.eye(f)), RT - Rw)
+        '''
+        T = tf.matmul(tf.linalg.inv(S + eps * tf.eye(self.f*self.N)), R - S)
     
         U, V = tf.linalg.eigh(T)
-        U_sort, _ = tf.nn.top_k(U, f)
+        U_sort, _ = tf.nn.top_k(U, 1)
         corr = K.sum(K.sqrt(U_sort))
-
+        
         return -corr
 
     def compute_output_shape(self, input_shape):
