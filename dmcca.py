@@ -13,7 +13,7 @@ if __name__ == '__main__':
     input_shape = 52
     hidden_shape = 20
     feature_shape = 10
-    activation1 = 'tanh'
+    activa = 'tanh'
     
     # network settings
     epoch_num  = 500
@@ -25,30 +25,30 @@ if __name__ == '__main__':
     # 网络结构
     # net1
     input1 = Input(shape=(input_shape, ), name='input1')
-    net1_1 = Dense(hidden_shape, activation=activation1, name='x1_1')(input1)
-    net1_2 = Dense(hidden_shape, activation=activation1, name='x1_2')(net1_1)
-    net1_3 = Dense(hidden_shape, activation=activation1,  name='x1_3')(net1_2)
+    net1_1 = Dense(hidden_shape, activation=activa, name='x1_1')(input1)
+    net1_2 = Dense(hidden_shape, activation=activa, name='x1_2')(net1_1)
+    net1_3 = Dense(hidden_shape, activation=activa,  name='x1_3')(net1_2)
     net1_out = Dense(feature_shape, activation='linear', name='x1_4')(net1_3)
     
     # net2
     input2 = Input(shape=(input_shape, ), name='input2')
-    net2_1 = Dense(hidden_shape, activation=activation1,  name='x2_1')(input2)
-    net2_2 = Dense(hidden_shape, activation=activation1,  name='x2_2')(net2_1)
-    net2_3 = Dense(hidden_shape, activation=activation1, name='x2_3')(net2_2)
+    net2_1 = Dense(hidden_shape, activation=activa,  name='x2_1')(input2)
+    net2_2 = Dense(hidden_shape, activation=activa,  name='x2_2')(net2_1)
+    net2_3 = Dense(hidden_shape, activation=activa, name='x2_3')(net2_2)
     net2_out = Dense(feature_shape, activation='linear', name='x2_4')(net2_3)
     
     # net3
     input3 = Input(shape=(input_shape, ), name='input3')
-    net3_1 = Dense(hidden_shape, activation=activation1,  name='x3_1')(input3)
-    net3_2 = Dense(hidden_shape, activation=activation1,  name='x3_2')(net3_1)
-    net3_3 = Dense(hidden_shape, activation=activation1, name='x3_3')(net3_2)
+    net3_1 = Dense(hidden_shape, activation=activa,  name='x3_1')(input3)
+    net3_2 = Dense(hidden_shape, activation=activa,  name='x3_2')(net3_1)
+    net3_3 = Dense(hidden_shape, activation=activa, name='x3_3')(net3_2)
     net3_out = Dense(feature_shape, activation='linear', name='x3_4')(net3_3)
     
     # net4
     input4 = Input(shape=(input_shape, ), name='input4')
-    net4_1 = Dense(hidden_shape, activation=activation1,  name='x4_1')(input4)
-    net4_2 = Dense(hidden_shape, activation=activation1,  name='x4_2')(net4_1)
-    net4_3 = Dense(hidden_shape, activation=activation1, name='x4_3')(net4_2)
+    net4_1 = Dense(hidden_shape, activation=activa,  name='x4_1')(input4)
+    net4_2 = Dense(hidden_shape, activation=activa,  name='x4_2')(net4_1)
+    net4_3 = Dense(hidden_shape, activation=activa, name='x4_3')(net4_2)
     net4_out = Dense(feature_shape, activation='linear', name='x4_4')(net4_3)
 
     # feature layer
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     
     model.fit([train_x, train_x, train_x, train_x], np.zeros(len(train_x)), batch_size=batch_size, epochs=epoch_num, shuffle=True)
     
-    #model.save('current_dcca.h5') # 保存模型
+    model.save('dmcca.h5') # 保存模型
     
 
 
